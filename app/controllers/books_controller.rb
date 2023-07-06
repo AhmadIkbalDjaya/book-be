@@ -1,23 +1,24 @@
 class BooksController < ApplicationController
   def index
     books = Book.all
-    json_data = {
+    render json: {
       responseCode: 200,
       responseStatus: "OK",
       responseMessage: "Success",
       data: books.map do |book|
         {
-          id: book.id,
+          id: book.id.to_s,
           title: book.title,
-          author: book.author
+          author: book.author,
+          publication_date: book.publication_date,
+          description: book.description
         }
       end
     }
-    render json: json_data
   end
 
   def store
-    book = Book.new(title: params[:title], author: params[:author])
+    book = Book.new(book_params)
 
     if book.save
       render json: {
@@ -38,17 +39,18 @@ class BooksController < ApplicationController
     book = Book.find(params[:id])
 
     if book
-      json_data = {
+      render json: {
         responseCode: 200,
         responseStatus: "OK",
         responseMessage: "Success",
         data: {
-          id: book.id,
+          id: book.id.to_s,
           title: book.title,
-          author: book.author
+          author: book.author,
+          publication_date: book.publication_date,
+          description: book.description
         }
       }
-      render json: json_data
     else
       render json: {
         responseCode: 404,
@@ -61,7 +63,7 @@ class BooksController < ApplicationController
   def update
     book = Book.find(params[:id])
 
-    if book.update(title: params[:title], author: params[:author])
+    if book.update(book_params)
       render json: {
         responseCode: 200,
         responseStatus: "OK",
@@ -92,5 +94,11 @@ class BooksController < ApplicationController
         responseMessage: "Book not deleted"
       }, status: :unprocessable_entity
     end
+  end
+
+  private
+
+  def book_params
+    params.permit(:title, :author, :publication_date, :description)
   end
 end
